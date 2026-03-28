@@ -566,9 +566,33 @@ class Wx:
             return False
             
     def check_lock(self, timeout: int = 300) -> bool:
-        if not os.path.exists(self.wx_login_url):
+        if os.path.exists(self.lock_file_path):
+            try:
+                with open(self.lock_file_path, 'r', encoding='utf-8') as f:
+                    content = f.read().strip()
+
+                pid_str, created_at_str = content.split('|', 1)
+                pid = int(pid_str)
+                created_at = float(created_at_str)
+
+                # 当前进程仍持有锁且未超时，视为登录流程仍在进行中
+                if psutil.pid_exists(pid):
+                    if timeout > 0 and time.time() - created_at > timeout:
+                        self._force_release_lock()
+                        self.isLOCK = False
+                        return False
+                    self.isLOCK = True
+                    return True
+            except Exception:
+                pass
+
+            self._force_release_lock()
+            self.isLOCK = False
             return False
-        return True
+
+        if os.path.exists(self.wx_login_url):
+            return True
+        return False
     def set_lock(self):
         """创建锁定文件，写入当前进程PID和时间戳"""
         os.makedirs(os.path.dirname(self.lock_file_path), exist_ok=True)

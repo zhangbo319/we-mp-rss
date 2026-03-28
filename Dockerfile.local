@@ -1,0 +1,24 @@
+FROM python:3.12-slim-bookworm
+
+ENV PYTHONUNBUFFERED=1
+ENV PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+ENV TZ=Asia/Shanghai
+ENV BROWSER_TYPE=webkit
+
+WORKDIR /app
+
+RUN sed -i 's|http://deb.debian.org/debian|https://mirrors.tuna.tsinghua.edu.cn/debian|g; s|http://deb.debian.org/debian-security|https://mirrors.tuna.tsinghua.edu.cn/debian-security|g' /etc/apt/sources.list.d/debian.sources \
+    && apt-get -o Acquire::Retries=5 update \
+    && apt-get install -y --no-install-recommends bash procps \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+RUN python -m playwright install --with-deps ${BROWSER_TYPE}
+
+COPY . .
+RUN cp config.example.yaml /app/config.yaml
+
+EXPOSE 8001
+
+CMD ["python", "main.py", "-job", "True", "-init", "True"]
