@@ -3,6 +3,8 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile.local
+      args:
+        PYTHON_BASE_IMAGE: ${PYTHON_BASE_IMAGE:-docker.m.daocloud.io/library/python:3.12-slim-bookworm}
     image: we-mp-rss:aliyun
     container_name: we-mp-rss
     restart: unless-stopped
