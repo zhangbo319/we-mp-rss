@@ -6,20 +6,17 @@ services:
     image: we-mp-rss:aliyun
     container_name: we-mp-rss
     restart: unless-stopped
-    env_file:
-      - ../.env.aliyun.example
     environment:
       DB: ${DB:-mysql+pymysql://zhangbo:zhangbo@127.0.0.1:3306/we_mp_rss?charset=utf8mb4}
       USERNAME: ${USERNAME:-zhangbo}
       PASSWORD: ${PASSWORD:-zhangbo}
       THREADS: ${THREADS:-1}
       WERSS_AUTH_WEB: ${WERSS_AUTH_WEB:-False}
-      PORT: ${PORT:-8001}
+      PORT: ${PORT:-80}
       TZ: ${TZ:-Asia/Shanghai}
       PROXY_ENABLED: ${PROXY_ENABLED:-False}
       PROXY_HTTP_URL: ${PROXY_HTTP_URL:-}
       AUTO_RELOAD: ${AUTO_RELOAD:-False}
-    ports:
-      - "${PORT:-8001}:8001"
+    network_mode: host
     volumes:
       - ../data:/app/data
